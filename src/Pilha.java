@@ -40,6 +40,58 @@ public class Pilha<E> {
 
 	}
 
+	public void inverterPilhaViaReferencial(){
+		Celula<E> anterior = fundo;
+		Celula<E> atual = topo;
+		Celula<E> proximo;
+
+		while (atual != fundo) {
+			proximo = atual.getProximo();
+			atual.setProximo(anterior);
+			anterior = atual;
+			atual = proximo;
+		}
+		topo = anterior;
+
+	}
+
+	public void inverterPilhaViaPilhaAuxuliar(){
+		Pilha<E> pilhaAuxiliar = new Pilha<>(); 
+		while (!vazia()) {
+			pilhaAuxiliar.empilhar(desempilhar());
+		}
+		topo = pilhaAuxiliar.topo; 
+		fundo = pilhaAuxiliar.fundo;
+	}
+
+	public void imprimirPilha(){
+		Celula<E> atual = topo;
+		
+		if (vazia()) {
+			System.out.println("A pilha está vazia!");
+			return;
+		}
+
+		while (atual != fundo) {
+			System.out.println(atual.getItem());
+			atual = atual.getProximo();
+		}
+	}
+
+	public void imprimirPilhaInversaRecursiva(){
+		imprimirPilhaInversaRecursiva(topo);
+	}
+
+	private void imprimirPilhaInversaRecursiva(Celula<E> atual){
+		if (atual == fundo){
+			return;
+		}
+		imprimirPilhaInversaRecursiva(atual.getProximo());
+		System.out.println(atual.getItem());
+	}
+
+
+
 	/**
 	 * Cria e devolve uma nova pilha contendo os primeiros numItens elementos
 	 * do topo da pilha atual.
@@ -54,7 +106,7 @@ public class Pilha<E> {
 	 */
 	public Pilha<E> subPilha(int numItens) {
 		
-		// TODO
+		// TO-DO
 		return null;
 	}
 }
