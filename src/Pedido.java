@@ -43,6 +43,36 @@ public class Pedido implements Comparable<Pedido> {
 	public ItemDePedido[] getItensDoPedido() {
 		return itensDePedido;
 	}
+
+	public Pedido criarDoTexto(String linha){
+		/* Formato do arquivo de pedidos:
+        1
+        ID do pedido: 1
+        Data do pedido: 07/05/2026
+        Pedido com 1 itens.
+        Itens de pedido no pedido:
+        PRODUTO: Envelope Verde
+        QUANTIDADE: 01
+        PREÇO UNITÁRIO: R$ 6,36
+        Pedido pago à vista. Percentual de desconto: 15,00%
+        Valor total do pedido: R$ 5,41
+
+         */
+		String[] dadosLinha;
+		dadosLinha = linha.split("ID do pedido: ");
+		this.idPedido = Integer.parseInt(dadosLinha[1].trim());
+		dadosLinha = linha.split("Data do pedido: ");
+		DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		this.dataPedido = LocalDate.parse(dadosLinha[1].trim(), formatoData);
+		dadosLinha = linha.split("Pedido com ");
+		this.quantItensDePedido = Integer.parseInt(dadosLinha[1].split(" itens.")[0].trim());
+		this.itensDePedido = new ItemDePedido[MAX_ITENS_DE_PEDIDO];
+		dadosLinha = linha.split("Pedido pago ");
+		this.formaDePagamento = dadosLinha[1].split("\\.")[0].trim().equals("à vista") ? 1 : 2;
+
+		
+		return this;
+	}
 	
 	public ItemDePedido existeNoPedido(Produto produto) {
 		

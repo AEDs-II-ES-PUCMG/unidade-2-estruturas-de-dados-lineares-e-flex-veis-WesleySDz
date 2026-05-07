@@ -1,11 +1,12 @@
+1
 Pedidos recentemente finalizados:
 ==============================
 ID do pedido: 1
 Data do pedido: 07/05/2026
 Pedido com 1 itens.
 Itens de pedido no pedido:
-PRODUTO: Cola Azul
-QUANTIDADE: 02
-PREÇO UNITÁRIO: R$ 10,84
+PRODUTO: Envelope Verde
+QUANTIDADE: 01
+PREÇO UNITÁRIO: R$ 6,36
 Pedido pago à vista. Percentual de desconto: 15,00%
-Valor total do pedido: R$ 18,43
+Valor total do pedido: R$ 5,41

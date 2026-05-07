@@ -17,6 +17,10 @@ public class App {
     static String nomeArquivoDados;
 
     /**
+     * Nome do arquivo de pedidos. O arquivo será criado na raiz do projeto
+     */
+
+    /**
      * Scanner para leitura de dados do teclado
      */
     static Scanner teclado;
@@ -25,6 +29,11 @@ public class App {
      * Vetor de produtos cadastrados
      */
     static Produto[] produtosCadastrados;
+
+    /**
+     *  Vetor de pedidos cadastrados
+     */
+    static Pedido[] pedidosCadastrados;
 
     /**
      * Quantidade de produtos cadastrados atualmente no vetor
@@ -37,9 +46,19 @@ public class App {
     static Pilha<Pedido> pilhaPedidos = new Pilha<>();
 
     /**
-     * Produtos mais recentemente pedidos
+     * Produtos mais recentemente pedidos - PILHA
      */
     static Pilha<Produto> pilhaProdutosMaisRecentes = new Pilha<>();
+
+    /**
+     * Fila de pedidos
+    */
+   static Fila<Pedido> filaPedido = new Fila<>();
+
+    /**
+     *  Pedidos mais recentemente pedidos - FILA
+     */
+    static Fila<Pedido> filaPedidoMaisRecentes = new Fila<>();
 
     static void limparTela() {
         System.out.print("\033[H\033[2J");
@@ -92,6 +111,38 @@ public class App {
         System.out.println("0 - Sair");
         System.out.print("Digite sua opção: ");
         return Integer.parseInt(teclado.nextLine());
+    }
+
+    static Pedido[] lerPedidos(String nomeArquivoPedidos){
+        Scanner arquivo = null;
+        int numPedidos;
+        String linha;
+        Pedido pedido;
+        Pedido[] pedidosCadastrados;
+
+        try {
+            arquivo = new Scanner(new File(nomeArquivoPedidos), Charset.forName("UTF-8"));
+
+            numPedidos = Integer.parseInt(arquivo.nextLine());
+            pedidosCadastrados = new Pedido[numPedidos];
+
+            // Pular as linhas de cabeçalho
+            for (int i = 0; i < 2; i++) {
+                arquivo.nextLine();
+            }
+
+            for (int i = 0; i < numPedidos; i++) {
+                linha = arquivo.nextLine();
+                pedido = Pedido.criarDoTexto(linha);
+                pedidosCadastrados[i] = pedido;
+            }
+
+        } catch (IOException excecaoArquivo) {
+            pedidosCadastrados = null;
+        } finally {
+            arquivo.close();
+        }
+        return pedidosCadastrados;
     }
 
     /**
@@ -269,6 +320,7 @@ public class App {
         if (quantidadeItensDePedido == 0) {
             System.out.println("Pedido sem itens!");
         } else {
+            filaPedido.enfileirar(pedido);
             pilhaPedidos.empilhar(pedido);
             System.out.println("Pedido finalizado com sucesso!");
         }
@@ -292,6 +344,7 @@ public class App {
                 System.out.println("Pilha de pedidos vazia!");
                 return;
             }
+            escritor.println(filaPedido.tamanhoFila());
             escritor.println("Pedidos recentemente finalizados:");
             pilhaPedidos.imprimirPilha(escritor);
         } catch(IOException e) {
@@ -327,6 +380,7 @@ public class App {
                     listarProdutosPedidosRecentes();
             }
             pausa();
+            limparTela();
         } while (opcao != 0);
 
         salvarPedidosEmArquivos();
