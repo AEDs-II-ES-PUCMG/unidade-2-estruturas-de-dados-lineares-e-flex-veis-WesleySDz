@@ -1,3 +1,4 @@
+import java.io.PrintWriter;
 import java.util.NoSuchElementException;
 
 public class Pilha<E> {
@@ -78,6 +79,14 @@ public class Pilha<E> {
 		}
 	}
 
+	public void imprimirPilha(PrintWriter escritor) {
+		Celula<E> atual = topo;
+		while (atual != fundo) {
+			escritor.println(atual.getItem());
+			atual = atual.getProximo();
+		}
+	}
+
 	public void imprimirPilhaInversaRecursiva(){
 		imprimirPilhaInversaRecursiva(topo);
 	}
@@ -105,8 +114,29 @@ public class Pilha<E> {
 	 * @throws IllegalArgumentException se a pilha não contém numItens elementos.
 	 */
 	public Pilha<E> subPilha(int numItens) {
-		
-		// TO-DO
-		return null;
+
+		Pilha<E> subPilha = new Pilha<>();
+		Celula<E> atual = topo;
+		for (int i = 0; i < numItens; i++) {
+			subPilha.empilhar(atual.getItem());
+			atual = atual.getProximo();
+		}
+		subPilha.inverterPilhaViaReferencial();
+		return subPilha;
+	}
+
+	public static void main(String[] args) {
+
+		Pilha<Integer> pilha = new Pilha<>();
+		pilha.empilhar(1);
+		pilha.empilhar(2);
+		pilha.empilhar(3);
+		pilha.empilhar(4);
+		// Testar subPilha
+		System.out.println("Pilha original:");
+		pilha.imprimirPilha();
+		Pilha<Integer> subPilha = pilha.subPilha(2);
+		System.out.println("Subpilha:");
+		subPilha.imprimirPilha();
 	}
 }
