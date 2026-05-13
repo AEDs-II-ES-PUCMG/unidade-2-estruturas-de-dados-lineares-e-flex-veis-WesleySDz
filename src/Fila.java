@@ -130,20 +130,16 @@ public class Fila<E> {
 
     public Fila<E> extrairLote(int numItens){
         Fila<E> filaExtraida = new Fila<>();
-        Celula<E> atual = frente.getProximo();
-        int tamanho = tamanhoFila();
+        int itensExtraidos = 0;
 
         if (vazia()){
             throw new NoSuchElementException("Não há itens na fila para extrair!");
         }
 
-        if (numItens > tamanho){
-            numItens = tamanho;
-        }
-
-        for (int i = 0; i < numItens; i++){
-            filaExtraida.enfileirar(atual.getItem());
-            atual = atual.getProximo();
+        // Desenfileira da fila original enquanto houver itens E o limite (numItens) não for atingido
+        while (!this.vazia() && itensExtraidos < numItens) {
+            filaExtraida.enfileirar(this.desenfileirar());
+            itensExtraidos++;
         }
 
         return filaExtraida;

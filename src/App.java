@@ -1,11 +1,15 @@
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class App {
@@ -19,6 +23,7 @@ public class App {
     /**
      * Nome do arquivo de pedidos. O arquivo será criado na raiz do projeto
      */
+    static final String NOME_ARQUIVO_PEDIDOS = "pedidos.txt";
 
     /**
      * Scanner para leitura de dados do teclado
@@ -29,11 +34,6 @@ public class App {
      * Vetor de produtos cadastrados
      */
     static Produto[] produtosCadastrados;
-
-    /**
-     *  Vetor de pedidos cadastrados
-     */
-    static Pedido[] pedidosCadastrados;
 
     /**
      * Quantidade de produtos cadastrados atualmente no vetor
@@ -55,10 +55,6 @@ public class App {
     */
    static Fila<Pedido> filaPedido = new Fila<>();
 
-    /**
-     *  Pedidos mais recentemente pedidos - FILA
-     */
-    static Fila<Pedido> filaPedidoMaisRecentes = new Fila<>();
 
     static void limparTela() {
         System.out.print("\033[H\033[2J");
@@ -113,37 +109,7 @@ public class App {
         return Integer.parseInt(teclado.nextLine());
     }
 
-    static Pedido[] lerPedidos(String nomeArquivoPedidos){
-        Scanner arquivo = null;
-        int numPedidos;
-        String linha;
-        Pedido pedido;
-        Pedido[] pedidosCadastrados;
 
-        try {
-            arquivo = new Scanner(new File(nomeArquivoPedidos), Charset.forName("UTF-8"));
-
-            numPedidos = Integer.parseInt(arquivo.nextLine());
-            pedidosCadastrados = new Pedido[numPedidos];
-
-            // Pular as linhas de cabeçalho
-            for (int i = 0; i < 2; i++) {
-                arquivo.nextLine();
-            }
-
-            for (int i = 0; i < numPedidos; i++) {
-                linha = arquivo.nextLine();
-                pedido = Pedido.criarDoTexto(linha);
-                pedidosCadastrados[i] = pedido;
-            }
-
-        } catch (IOException excecaoArquivo) {
-            pedidosCadastrados = null;
-        } finally {
-            arquivo.close();
-        }
-        return pedidosCadastrados;
-    }
 
     /**
      * Lê os dados de um arquivo-texto e retorna um vetor de produtos.
@@ -162,7 +128,7 @@ public class App {
         int numProdutos;
         String linha;
         Produto produto;
-        Produto[] produtosCadastrados;
+        Produto[] produtosCadastrados = null;
 
         try {
             arquivo = new Scanner(new File(nomeArquivoDados), Charset.forName("UTF-8"));
@@ -184,6 +150,76 @@ public class App {
         }
 
         return produtosCadastrados;
+    }
+
+    static void carregarPedidosSalvos() {
+        Path arquivoPedidos = Paths.get(NOME_ARQUIVO_PEDIDOS);
+        if (!Files.exists(arquivoPedidos)) return;
+        
+        try {
+            List<String> linhas = Files.readAllLines(arquivoPedidos, StandardCharsets.UTF_8);
+            
+            if (linhas.isEmpty()) return;
+            
+            for (int i = 1; i < linhas.size(); i++) {
+                String linha = linhas.get(i).trim();
+                if (linha.isEmpty() || !linha.contains(";")) continue;
+                
+                String[] partes = linha.split(";");
+                java.time.format.DateTimeFormatter formatoData = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate data = LocalDate.parse(partes[0].trim(), formatoData);
+                int formaPagamento = Integer.parseInt(partes[1].trim());
+                
+                Pedido pedido = new Pedido(data, formaPagamento);
+                
+                for (int j = 2; j < partes.length; j++) {
+                    String[] itemPartes = partes[j].split(":");
+                    if(itemPartes.length == 2) {
+                        String descricao = itemPartes[0];
+                        int qtd = Integer.parseInt(itemPartes[1]);
+                        
+                        for (int k = 0; k < quantosProdutos; k++) {
+                            if (produtosCadastrados[k].descricao.equals(descricao)) {
+                                pedido.incluirProduto(produtosCadastrados[k], qtd);
+                                break;
+                            }
+                        }
+                    }
+                }
+                filaPedido.enfileirar(pedido);
+                pilhaPedidos.empilhar(pedido);
+            }
+        } catch (Exception e) {
+            System.out.println("Aviso: Erro ao carregar os pedidos anteriores: " + e.getMessage());
+        }
+    }
+
+   public static void salvarPedidosEmArquivos() {
+        Path arquivoPedidos = Paths.get(NOME_ARQUIVO_PEDIDOS);
+        try {
+            List<String> linhas = new ArrayList<>();
+            Fila<Pedido> filaAux = new Fila<>();
+            
+            linhas.add(""); 
+            int totalPedidos = 0;
+            
+            while (!filaPedido.vazia()) {
+                Pedido p = filaPedido.desenfileirar();
+                linhas.add(p.paraLinhaArquivo());
+                filaAux.enfileirar(p);
+                totalPedidos++;
+            }
+            
+            linhas.set(0, String.valueOf(totalPedidos));
+            
+            while (!filaAux.vazia()) {
+                filaPedido.enfileirar(filaAux.desenfileirar());
+            }
+            
+            Files.write(arquivoPedidos, linhas, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            System.out.println("Erro ao salvar os pedidos no arquivo: " + e.getMessage());
+        }
     }
 
     /**
@@ -332,25 +368,28 @@ public class App {
         cabecalho();
         System.out.println("Produtos mais recentemente pedidos:");
         if (pilhaProdutosMaisRecentes.vazia()) {
-            System.out.println("Pilha de produtos mais recentes vazia!");
+            System.out.println("Não há produtos mais recentes!");
             return;
         }
         pilhaProdutosMaisRecentes.imprimirPilhaInversaRecursiva();
     }
 
-    public static void salvarPedidosEmArquivos() {
-        try(PrintWriter escritor = new PrintWriter(new FileWriter("pedidos.txt"))) {
-            if (pilhaPedidos.vazia()) {
-                System.out.println("Pilha de pedidos vazia!");
-                return;
+    public static void extrairEVisualizarLotePedidos() {
+        cabecalho();
+        System.out.println("Processando lote com os próximos 3 pedidos da fila...");
+        
+        try {
+            Fila<Pedido> loteExtraido = filaPedido.extrairLote(3);
+            
+            while (!loteExtraido.vazia()) {
+                Pedido p = loteExtraido.desenfileirar();
+                System.out.println(p.toString());
             }
-            escritor.println(filaPedido.tamanhoFila());
-            escritor.println("Pedidos recentemente finalizados:");
-            pilhaPedidos.imprimirPilha(escritor);
-        } catch(IOException e) {
-            System.out.println("Erro ao salvar os pedidos em arquivos!");
+        } catch (java.util.NoSuchElementException e) {
+            System.out.println("A fila de pedidos já está vazia!");
         }
     }
+
 
     public static void main(String[] args) {
 
@@ -358,6 +397,8 @@ public class App {
 
         nomeArquivoDados = "produtos.txt";
         produtosCadastrados = lerProdutos(nomeArquivoDados);
+
+        carregarPedidosSalvos();
 
         Pedido pedido = null;
 

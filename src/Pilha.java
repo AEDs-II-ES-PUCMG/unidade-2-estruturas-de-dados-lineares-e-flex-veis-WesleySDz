@@ -14,6 +14,17 @@ public class Pilha<E> {
 
 	}
 
+	public int tamanhoPilha() {
+
+		int tamanho = 0;
+		Celula<E> atual = topo;
+		while (atual != fundo) {
+			tamanho++;
+			atual = atual.getProximo();
+		}
+		return tamanho;
+	}
+
 	public boolean vazia() {
 		return fundo == topo;
 	}

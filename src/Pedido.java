@@ -39,39 +39,23 @@ public class Pedido implements Comparable<Pedido> {
 		this.dataPedido = dataPedido;
 		this.formaDePagamento = formaDePagamento;
 	}
+
+	public static void atualizarUltimoID(int novoUltimoID) {
+		if (novoUltimoID > 0) {
+			ultimoID = novoUltimoID;
+		}
+	}
 	
 	public ItemDePedido[] getItensDoPedido() {
 		return itensDePedido;
 	}
 
-	public Pedido criarDoTexto(String linha){
-		/* Formato do arquivo de pedidos:
-        1
-        ID do pedido: 1
-        Data do pedido: 07/05/2026
-        Pedido com 1 itens.
-        Itens de pedido no pedido:
-        PRODUTO: Envelope Verde
-        QUANTIDADE: 01
-        PREÇO UNITÁRIO: R$ 6,36
-        Pedido pago à vista. Percentual de desconto: 15,00%
-        Valor total do pedido: R$ 5,41
-
-         */
-		String[] dadosLinha;
-		dadosLinha = linha.split("ID do pedido: ");
-		this.idPedido = Integer.parseInt(dadosLinha[1].trim());
-		dadosLinha = linha.split("Data do pedido: ");
+	public static Pedido criarDoTexto(String linha){
 		DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		this.dataPedido = LocalDate.parse(dadosLinha[1].trim(), formatoData);
-		dadosLinha = linha.split("Pedido com ");
-		this.quantItensDePedido = Integer.parseInt(dadosLinha[1].split(" itens.")[0].trim());
-		this.itensDePedido = new ItemDePedido[MAX_ITENS_DE_PEDIDO];
-		dadosLinha = linha.split("Pedido pago ");
-		this.formaDePagamento = dadosLinha[1].split("\\.")[0].trim().equals("à vista") ? 1 : 2;
-
-		
-		return this;
+		String[] partes = linha.split(";");
+		LocalDate data = LocalDate.parse(partes[0].trim(), formatoData);
+		int formaPagamento = Integer.parseInt(partes[1].trim());
+		return new Pedido(data, formaPagamento);
 	}
 	
 	public ItemDePedido existeNoPedido(Produto produto) {
@@ -106,6 +90,26 @@ public class Pedido implements Comparable<Pedido> {
 			return true;
 		}
 		return false;
+	}
+
+	public String paraLinhaArquivo() {
+		DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		StringBuilder linha = new StringBuilder();
+		linha.append(formatoData.format(dataPedido));
+		linha.append(";");
+		linha.append(formaDePagamento);
+
+		for (int i = 0; i < quantItensDePedido; i++) {
+			ItemDePedido item = itensDePedido[i];
+			if (item != null) {
+				linha.append(";");
+				linha.append(item.getProduto().descricao);
+				linha.append(":");
+				linha.append(item.getQuantidade());
+			}
+		}
+
+		return linha.toString();
 	}
 	
 	/**
