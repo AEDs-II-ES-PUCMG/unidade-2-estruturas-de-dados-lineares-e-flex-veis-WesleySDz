@@ -146,7 +146,9 @@ public class App {
         } catch (IOException excecaoArquivo) {
             produtosCadastrados = null;
         } finally {
-            arquivo.close();
+            if (arquivo != null) {
+                arquivo.close();
+            }
         }
 
         return produtosCadastrados;
@@ -189,7 +191,7 @@ public class App {
                 filaPedido.enfileirar(pedido);
                 pilhaPedidos.empilhar(pedido);
             }
-        } catch (Exception e) {
+        } catch (IOException | NumberFormatException e) {
             System.out.println("Aviso: Erro ao carregar os pedidos anteriores: " + e.getMessage());
         }
     }
@@ -402,7 +404,7 @@ public class App {
 
         Pedido pedido = null;
 
-        int opcao = -1;
+        int opcao; // = -1;
 
         do {
             opcao = menu();

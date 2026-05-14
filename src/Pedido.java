@@ -165,26 +165,26 @@ public class Pedido implements Comparable<Pedido> {
 		StringBuilder stringPedido = new StringBuilder();
 		
 		stringPedido.append("==============================\n");
-		stringPedido.append("ID do pedido: " + idPedido + "\n");
+		stringPedido.append("ID do pedido: ").append(idPedido).append("\n");
 		
 		DateTimeFormatter formatoData = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		
-		stringPedido.append("Data do pedido: " + formatoData.format(dataPedido) + "\n");
+		stringPedido.append("Data do pedido: ").append(formatoData.format(dataPedido)).append("\n");
 		
-		stringPedido.append("Pedido com " + quantItensDePedido + " itens.\n");
+		stringPedido.append("Pedido com ").append(quantItensDePedido).append(" itens.\n");
 		stringPedido.append("Itens de pedido no pedido:\n");
 		for (int i = 0; i < quantItensDePedido; i++ ) {
-			stringPedido.append(itensDePedido[i].toString() + "\n");
+			stringPedido.append(itensDePedido[i].toString()).append("\n");
 		}
 		
 		stringPedido.append("Pedido pago ");
 		if (formaDePagamento == 1) {
-			stringPedido.append("à vista. Percentual de desconto: " + String.format("%.2f", DESCONTO_PG_A_VISTA * 100) + "%\n");
+			stringPedido.append("à vista. Percentual de desconto: ").append(String.format("%.2f", DESCONTO_PG_A_VISTA * 100)).append("%\n");
 		} else {
 			stringPedido.append("parcelado.\n");
 		}
 		
-		stringPedido.append("Valor total do pedido: R$ " + String.format("%.2f", valorFinal()));
+		stringPedido.append("Valor total do pedido: R$ ").append(String.format("%.2f", valorFinal()));
 		
 		return stringPedido.toString();
 	}

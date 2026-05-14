@@ -8,7 +8,7 @@ public class Pilha<E> {
 
 	public Pilha() {
 
-		Celula<E> sentinela = new Celula<E>();
+		Celula<E> sentinela = new Celula<>();
 		fundo = sentinela;
 		topo = sentinela;
 
@@ -31,7 +31,7 @@ public class Pilha<E> {
 
 	public void empilhar(E item) {
 
-		topo = new Celula<E>(item, topo);
+		topo = new Celula<>(item, topo);
 	}
 
 	public E desempilhar() {
